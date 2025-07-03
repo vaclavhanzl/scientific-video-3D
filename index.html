@@ -1,31 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Protein Morph Movie</title>
-  <link rel="stylesheet" href="https://unpkg.com/molstar/build/viewer/molstar.css">
-  <style>
-    body { margin: 0; }
-    #viewer { width: 100vw; height: 90vh; }
-    #controls {
-      padding: 10px;
-      background: #f5f5f5;
-    }
-  </style>
-  <link rel="icon" href="./favicon.ico" type="image/x-icon">
-</head>
-<body>
-
-<div id="controls">
-  <button id="playPause">▶️ Play</button>
-  <span id="frameNum">Frame: 1</span>
-</div>
-<div id="viewer"></div>
-
-
-
-
-<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -45,7 +18,7 @@
 </div>
 <div id="viewer"></div>
 
-<script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
+<script src="https://unpkg.com/molstar/build/viewer/plugin.js"></script>
 <script>
   const totalFrames = 50;
   let currentFrame = 1;
@@ -55,8 +28,7 @@
   let structureRef = null;
 
   async function init() {
-    plugin = await molstar.PluginContext.create();
-    plugin.setLayout({ isExpanded: true });
+    plugin = new molstar.Plugin();
     plugin.init();
     plugin.mount(document.getElementById('viewer'));
 
@@ -106,6 +78,5 @@
 
   init();
 </script>
-
 </body>
 </html>
