@@ -24,51 +24,64 @@
 
 
 
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mol* Protein Movie</title>
+  <link rel="stylesheet" href="https://unpkg.com/molstar/build/viewer/molstar.css">
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    #controls { padding: 10px; background: #eee; }
+    #viewer { width: 100vw; height: 90vh; }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <button id="playPause">▶️ Play</button>
+  <span id="frameNum">Frame: 1</span>
+</div>
+<div id="viewer"></div>
+
 <script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
 <script>
-  let viewer;
-  let currentFrame = 1;
   const totalFrames = 50;
+  let currentFrame = 1;
   let playing = false;
   let intervalId = null;
-  let currentStructureRef = null;
+  let plugin;
+  let structureRef = null;
 
-  async function initViewer() {
-    viewer = new molstar.Viewer('viewer', {
-      layoutShowControls: true,
-      layoutIsExpanded: true,
-      layoutShowLeftPanel: false
-    });
+  async function init() {
+    plugin = await molstar.PluginContext.create();
+    plugin.setLayout({ isExpanded: true });
+    plugin.init();
+    plugin.mount(document.getElementById('viewer'));
 
-    // Delay a moment to let Mol* fully initialize
-    await new Promise(resolve => setTimeout(resolve, 100));
     await loadFrame(currentFrame);
   }
 
   async function loadFrame(frame) {
     try {
       //const id = String(frame).padStart(3, '0');
-      //const file = `pdbs/model_${id}.pdb`;
-      const file = `pdbs/result${String(frame-1)}.pdb`;
+      //const url = `pdbs/model_${id}.pdb`;
+      const url = `pdbs/result${String(frame-1)}.pdb`;
 
-      document.getElementById('frameNum').textContent = `Frame: ${frame}`;
-
-      // Remove previous structure
-      if (currentStructureRef) {
-        await viewer.plugin.managers.structure.hierarchy.remove([currentStructureRef]);
-        currentStructureRef = null;
+      if (structureRef) {
+        await plugin.managers.structure.hierarchy.remove([structureRef]);
+        structureRef = null;
       }
 
-      // Download and parse the structure
-      const data = await viewer.plugin.builders.data.download({ url: file, isBinary: false });
-      const parsed = await viewer.plugin.builders.structure.parseTrajectory(data, 'pdb');
-      const result = await viewer.plugin.builders.structure.hierarchy.applyPreset(parsed, 'default');
+      const data = await plugin.builders.data.download({ url, isBinary: false });
+      const traj = await plugin.builders.structure.parseTrajectory(data, 'pdb');
+      const built = await plugin.builders.structure.hierarchy.applyPreset(traj, 'default');
+      structureRef = built?.cell?.transform.ref;
 
-      // Save reference to remove later
-      currentStructureRef = result?.cell?.transform.ref;
-
-    } catch (err) {
-      console.error(`Error loading frame ${frame}:`, err);
+      document.getElementById('frameNum').textContent = `Frame: ${frame}`;
+    } catch (e) {
+      console.error(`Error loading frame ${frame}:`, e);
     }
   }
 
@@ -76,10 +89,9 @@
     playing = true;
     document.getElementById('playPause').textContent = '⏸ Pause';
     intervalId = setInterval(() => {
-      currentFrame++;
-      if (currentFrame > totalFrames) currentFrame = 1;
+      currentFrame = (currentFrame % totalFrames) + 1;
       loadFrame(currentFrame);
-    }, 200); // speed
+    }, 200);
   }
 
   function pause() {
@@ -92,9 +104,8 @@
     playing ? pause() : play();
   });
 
-  initViewer();
+  init();
 </script>
-
 
 </body>
 </html>
