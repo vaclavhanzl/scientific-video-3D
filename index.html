@@ -22,37 +22,46 @@
 <div id="viewer"></div>
 
 
+
+
+
 <script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
 <script>
-  const viewer = new molstar.Viewer('viewer', {
-    layoutShowControls: true,
-    layoutIsExpanded: true,
-    layoutShowLeftPanel: false
-  });
-
+  let viewer;
   let currentFrame = 1;
   const totalFrames = 50;
   let playing = false;
   let intervalId = null;
 
-  function loadFrame(frame) {
+  async function initViewer() {
+    viewer = new molstar.Viewer('viewer', {
+      layoutShowControls: true,
+      layoutIsExpanded: true,
+      layoutShowLeftPanel: false
+    });
+
+    // Load the first frame after initialization
+    await loadFrame(currentFrame);
+  }
+
+  async function loadFrame(frame) {
     //const id = String(frame).padStart(3, '0');
     //const file = `pdbs/model_${id}.pdb`;
     const file = `pdbs/result${String(frame-1)}.pdb`;
 
-    viewer.loadStructureFromUrl(file, 'pdb', { defaultRepresentation: true });
-
     document.getElementById('frameNum').textContent = `Frame: ${frame}`;
+
+    await viewer.loadStructureFromUrl(file, 'pdb', { defaultRepresentation: true });
   }
 
   function play() {
     playing = true;
     document.getElementById('playPause').textContent = '⏸ Pause';
-    intervalId = setInterval(() => {
+    intervalId = setInterval(async () => {
       currentFrame++;
       if (currentFrame > totalFrames) currentFrame = 1;
-      loadFrame(currentFrame);
-    }, 200); // Adjust speed here
+      await loadFrame(currentFrame);
+    }, 200);
   }
 
   function pause() {
@@ -65,8 +74,8 @@
     playing ? pause() : play();
   });
 
-  // Load first frame
-  loadFrame(currentFrame);
+  // Start the viewer
+  initViewer();
 </script>
 
 </body>
