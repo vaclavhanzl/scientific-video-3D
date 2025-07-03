@@ -21,6 +21,7 @@
 </div>
 <div id="viewer"></div>
 
+
 <script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
 <script>
   const viewer = new molstar.Viewer('viewer', {
@@ -39,8 +40,7 @@
     //const file = `pdbs/model_${id}.pdb`;
     const file = `pdbs/result${String(frame-1)}.pdb`;
 
-    viewer.clear();
-    viewer.loadPdb(file, { defaultRepresentation: true });
+    viewer.loadStructureFromUrl(file, 'pdb', { defaultRepresentation: true });
 
     document.getElementById('frameNum').textContent = `Frame: ${frame}`;
   }
@@ -52,7 +52,7 @@
       currentFrame++;
       if (currentFrame > totalFrames) currentFrame = 1;
       loadFrame(currentFrame);
-    }, 200); // ~5 FPS
+    }, 200); // Adjust speed here
   }
 
   function pause() {
@@ -65,7 +65,9 @@
     playing ? pause() : play();
   });
 
-  loadFrame(currentFrame); // Load first frame
+  // Load first frame
+  loadFrame(currentFrame);
 </script>
+
 </body>
 </html>
