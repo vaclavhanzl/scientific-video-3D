@@ -22,6 +22,7 @@
 <div id="viewer"></div>
 
 
+
 <script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
 <script>
   let viewer;
@@ -29,6 +30,7 @@
   const totalFrames = 50;
   let playing = false;
   let intervalId = null;
+  let currentStructureRef = null;
 
   async function initViewer() {
     viewer = new molstar.Viewer('viewer', {
@@ -37,8 +39,6 @@
       layoutShowLeftPanel: false
     });
 
-    // Wait for plugin to initialize properly
-    await viewer.plugin.clear();
     await loadFrame(currentFrame);
   }
 
@@ -49,10 +49,17 @@
 
     document.getElementById('frameNum').textContent = `Frame: ${frame}`;
 
-    await viewer.plugin.clear(); // Clears previous structure safely
-    await viewer.loadStructureFromUrl(file, 'pdb', {
-      defaultRepresentation: true
-    });
+    // Remove previous structure if exists
+    if (currentStructureRef) {
+      await viewer.plugin.managers.structure.hierarchy.remove([currentStructureRef]);
+      currentStructureRef = null;
+    }
+
+    // Load new structure
+    const data = await viewer.plugin.builders.data.download({ url: file, isBinary: false });
+    const parsed = await viewer.plugin.builders.structure.parseTrajectory(data, 'pdb');
+    const structure = await viewer.plugin.builders.structure.hierarchy.applyPreset(parsed, 'default');
+    currentStructureRef = structure?.cell?.transform.ref;  // Save ref for next removal
   }
 
   function play() {
