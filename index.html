@@ -22,9 +22,6 @@
 <div id="viewer"></div>
 
 
-
-
-
 <script src="https://unpkg.com/molstar/build/viewer/molstar.js"></script>
 <script>
   let viewer;
@@ -40,7 +37,8 @@
       layoutShowLeftPanel: false
     });
 
-    // Load the first frame after initialization
+    // Wait for plugin to initialize properly
+    await viewer.plugin.clear();
     await loadFrame(currentFrame);
   }
 
@@ -51,16 +49,19 @@
 
     document.getElementById('frameNum').textContent = `Frame: ${frame}`;
 
-    await viewer.loadStructureFromUrl(file, 'pdb', { defaultRepresentation: true });
+    await viewer.plugin.clear(); // Clears previous structure safely
+    await viewer.loadStructureFromUrl(file, 'pdb', {
+      defaultRepresentation: true
+    });
   }
 
   function play() {
     playing = true;
     document.getElementById('playPause').textContent = '⏸ Pause';
-    intervalId = setInterval(async () => {
+    intervalId = setInterval(() => {
       currentFrame++;
       if (currentFrame > totalFrames) currentFrame = 1;
-      await loadFrame(currentFrame);
+      loadFrame(currentFrame);
     }, 200);
   }
 
@@ -74,7 +75,6 @@
     playing ? pause() : play();
   });
 
-  // Start the viewer
   initViewer();
 </script>
 
