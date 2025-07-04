@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Protein Structure Viewer</title>
+  <title>Protein Viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/molstar@3.0.0/build/viewer/molstar.js"></script>
   <style>
     html, body {
@@ -10,25 +10,29 @@
       height: 100%;
       overflow: hidden;
     }
-    #app {
+    #viewer {
       width: 100vw;
       height: 100vh;
     }
   </style>
 </head>
 <body>
-  <div id="app"></div>
-  <script>
-    const viewer = new MolStar.Viewer('app', {
-      layoutIsExpanded: true,
-      layoutShowControls: true,
-      layoutShowRemoteState: false,
-      layoutShowSequence: true,
-      layoutShowLog: false,
-      layoutShowLeftPanel: true
-    });
+  <div id="viewer"></div>
 
-    viewer.loadPdb('pdbs/result0.pdb');
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const viewer = new Molstar.Viewer('viewer', {
+        layoutIsExpanded: true,
+        layoutShowControls: true,
+        layoutShowRemoteState: false,
+        layoutShowSequence: true,
+        layoutShowLog: false,
+        layoutShowLeftPanel: true
+      });
+
+      // Load the local PDB file
+      viewer.loadStructureFromFile('pdbs/result0.pdb', 'pdb');
+    });
   </script>
 </body>
 </html>
