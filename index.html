@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Protein Structure Viewer</title>
+  <title>Protein Animation</title>
   <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
   <style>
     html, body { margin: 0; height: 100%; }
@@ -13,18 +13,39 @@
   <div id="viewer"></div>
 
   <script>
-    let viewer = $3Dmol.createViewer("viewer", {
+    const viewer = $3Dmol.createViewer("viewer", {
       defaultcolors: $3Dmol.rasmolElementColors
     });
 
-    fetch("pdbs/result0.pdb")
-      .then(response => response.text())
-      .then(data => {
-        viewer.addModel(data, "pdb");
+    const totalFrames = 50;
+    const pdbPaths = Array.from({length: totalFrames}, (_, i) => `pdbs/result${i}.pdb`);
+    const pdbData = [];
+    const frameDelay = 300; // ms between frames
+
+    let currentFrame = 0;
+
+    // Function to fetch all PDB files in order
+    async function loadAllPDBs() {
+      for (let i = 0; i < pdbPaths.length; i++) {
+        const response = await fetch(pdbPaths[i]);
+        const text = await response.text();
+        pdbData.push(text);
+      }
+      playAnimation();
+    }
+
+    function playAnimation() {
+      setInterval(() => {
+        viewer.clear();
+        viewer.addModel(pdbData[currentFrame], "pdb");
         viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
         viewer.zoomTo();
         viewer.render();
-      });
+        currentFrame = (currentFrame + 1) % totalFrames;
+      }, frameDelay);
+    }
+
+    loadAllPDBs();
   </script>
 </body>
 </html>
