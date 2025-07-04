@@ -2,37 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Protein Viewer</title>
-  <script src="https://cdn.jsdelivr.net/npm/molstar@3.0.0/build/viewer/molstar.js"></script>
+  <title>Protein Structure Viewer</title>
+  <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-    }
-    #viewer {
-      width: 100vw;
-      height: 100vh;
-    }
+    html, body { margin: 0; height: 100%; }
+    #viewer { width: 100%; height: 100vh; }
   </style>
 </head>
 <body>
   <div id="viewer"></div>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const viewer = new Molstar.Viewer('viewer', {
-        layoutIsExpanded: true,
-        layoutShowControls: true,
-        layoutShowRemoteState: false,
-        layoutShowSequence: true,
-        layoutShowLog: false,
-        layoutShowLeftPanel: true
-      });
-
-      // Load the local PDB file
-      viewer.loadStructureFromFile('pdbs/result0.pdb', 'pdb');
+    let viewer = $3Dmol.createViewer("viewer", {
+      defaultcolors: $3Dmol.rasmolElementColors
     });
+
+    fetch("pdbs/result0.pdb")
+      .then(response => response.text())
+      .then(data => {
+        viewer.addModel(data, "pdb");
+        viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        viewer.zoomTo();
+        viewer.render();
+      });
   </script>
 </body>
 </html>
