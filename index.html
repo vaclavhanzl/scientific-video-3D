@@ -1,82 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mol* Protein Movie</title>
-  <link rel="stylesheet" href="https://unpkg.com/molstar/build/viewer/molstar.css">
+  <meta charset="UTF-8" />
+  <title>Protein Structure Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/molstar@3.0.0/build/viewer/molstar.js"></script>
   <style>
-    body { margin: 0; font-family: sans-serif; }
-    #controls { padding: 10px; background: #eee; }
-    #viewer { width: 100vw; height: 90vh; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    #app {
+      width: 100vw;
+      height: 100vh;
+    }
   </style>
 </head>
 <body>
+  <div id="app"></div>
+  <script>
+    const viewer = new MolStar.Viewer('app', {
+      layoutIsExpanded: true,
+      layoutShowControls: true,
+      layoutShowRemoteState: false,
+      layoutShowSequence: true,
+      layoutShowLog: false,
+      layoutShowLeftPanel: true
+    });
 
-<div id="controls">
-  <button id="playPause">▶️ Play</button>
-  <span id="frameNum">Frame: 1</span>
-</div>
-<div id="viewer"></div>
-
-<script src="https://unpkg.com/molstar/build/viewer/plugin.js"></script>
-<script>
-  const totalFrames = 50;
-  let currentFrame = 1;
-  let playing = false;
-  let intervalId = null;
-  let plugin;
-  let structureRef = null;
-
-  async function init() {
-    plugin = new molstar.Plugin();
-    plugin.init();
-    plugin.mount(document.getElementById('viewer'));
-
-    await loadFrame(currentFrame);
-  }
-
-  async function loadFrame(frame) {
-    try {
-      //const id = String(frame).padStart(3, '0');
-      //const url = `pdbs/model_${id}.pdb`;
-      const url = `pdbs/result${String(frame-1)}.pdb`;
-
-      if (structureRef) {
-        await plugin.managers.structure.hierarchy.remove([structureRef]);
-        structureRef = null;
-      }
-
-      const data = await plugin.builders.data.download({ url, isBinary: false });
-      const traj = await plugin.builders.structure.parseTrajectory(data, 'pdb');
-      const built = await plugin.builders.structure.hierarchy.applyPreset(traj, 'default');
-      structureRef = built?.cell?.transform.ref;
-
-      document.getElementById('frameNum').textContent = `Frame: ${frame}`;
-    } catch (e) {
-      console.error(`Error loading frame ${frame}:`, e);
-    }
-  }
-
-  function play() {
-    playing = true;
-    document.getElementById('playPause').textContent = '⏸ Pause';
-    intervalId = setInterval(() => {
-      currentFrame = (currentFrame % totalFrames) + 1;
-      loadFrame(currentFrame);
-    }, 200);
-  }
-
-  function pause() {
-    playing = false;
-    document.getElementById('playPause').textContent = '▶️ Play';
-    clearInterval(intervalId);
-  }
-
-  document.getElementById('playPause').addEventListener('click', () => {
-    playing ? pause() : play();
-  });
-
-  init();
-</script>
+    viewer.loadPdb('pdbs/result0.pdb');
+  </script>
 </body>
 </html>
